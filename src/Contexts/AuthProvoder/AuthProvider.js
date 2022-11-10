@@ -1,17 +1,52 @@
-import React, { createContext } from 'react';
-import { getAuth } from "../../Firebase/app";
-import app from '../../Firebase/firebase.config'
+import React, { createContext, useEffect, useState } from 'react';
+import { createUserWithEmailAndPassword, getAuth, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, signInWithPopup, signOut, updateProfile } from 'firebase/auth'
+import app from '../../Firebase/firebase.config.js'
 
-const AuthContext = createContext();
-const auth = getAuth(app);
+export const AuthContext = createContext();
+const auth = getAuth(app)
+const AuthProvider = ({ children }) => {
 
-const authInfo = {}
+    const googleProvider = new GoogleAuthProvider();
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-const AuthProvider = () => {
+
+    const handelProfile = (profile) => {
+        return updateProfile(auth.currentUser, profile);
+    }
+
+    const createUser = (email, password) => {
+        return createUserWithEmailAndPassword(auth, email, password);
+    }
+
+    const signIn = (email, password) => {
+        setLoading(true);
+        return signInWithEmailAndPassword(auth, email, password);
+    }
+
+    const signInGoogle = () => {
+        setLoading(true);
+        return signInWithPopup(auth, googleProvider);
+
+    }
+
+    const logOut = () => {
+        return signOut(auth)
+    }
+
+    useEffect(() => {
+        const unSubscribe = onAuthStateChanged(auth, currentUser => {
+            setUser(currentUser);
+            setLoading(false);
+        });
+        return () => unSubscribe();
+    }, [])
+
+    const authInfo = { user, loading, createUser, signIn, signInGoogle, logOut, handelProfile };
     return (
-        <AuthContext.provider value={authInfo}>
-
-        </AuthContext.provider>
+        <AuthContext.Provider value={authInfo}>
+            {children}
+        </AuthContext.Provider>
     );
 };
 

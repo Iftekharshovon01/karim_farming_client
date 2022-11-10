@@ -1,10 +1,44 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useContext, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../Contexts/AuthProvoder/AuthProvider';
 
 const Login = () => {
+    const { signIn, signInGoogle } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = location.state?.from?.pathname || '/'
 
-    const handleLogin = event => {
+    const [error, setError] = useState(null);
+    const handleLogin = (event) => {
         event.preventDefault();
+        const form = event.target;
+        const email = form.email.value;
+        const password = form.password.value;
+
+        if (password.length < 6) {
+            setError('Password is too short!')
+            return;
+        }
+
+        signIn(email, password)
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+                form.reset();
+                navigate(from, { replace: true });
+            })
+            .catch(error => console.error(error));
+
+    }
+
+    const handleGoogleSignIn = () => {
+        signInGoogle()
+            .then(result => {
+                const user = result.user;
+                console.log(user);
+                navigate(from, { replace: true });
+            })
+            .catch(err => console.error(err));
     }
 
     return (
@@ -32,6 +66,7 @@ const Login = () => {
                         </div>
                     </form>
                     <p className='mx-auto py-2'>No Account?<Link to='/register' className='color-emerald-500 text-bold'>Register</Link></p>
+                    <button className="btn btn-active btn-secondary" onClick={handleGoogleSignIn} type="submit">Google</button>
                 </div>
             </div>
         </div>
