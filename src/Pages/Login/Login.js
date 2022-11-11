@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../Contexts/AuthProvoder/AuthProvider';
 
@@ -8,7 +8,7 @@ const Login = () => {
     const location = useLocation();
     const from = location.state?.from?.pathname || '/'
 
-    const [error, setError] = useState(null);
+
     const handleLogin = (event) => {
         event.preventDefault();
         const form = event.target;
@@ -16,7 +16,7 @@ const Login = () => {
         const password = form.password.value;
 
         if (password.length < 6) {
-            setError('Password is too short!')
+            alert('Password is too short!')
             return;
         }
 
